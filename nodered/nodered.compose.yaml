@@ -1,0 +1,33 @@
+services:
+  node-red:
+    container_name: node-red
+    restart: always
+    env_file:
+      - ../.env
+    networks:
+      - proxy
+      - zigbee-internal
+      - mongodb
+    extra_hosts:
+      - ha:host-gateway
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.node-red.entryPoints=https
+      - traefik.http.routers.node-red.tls=true
+      - traefik.http.routers.node-red.middlewares=default@file
+    expose:
+      - 1880/tcp
+    volumes:
+      - ./data:/data
+      - /home/storage/homeassistant/media/cameras:/media/cameras
+      - /home/containers/homeassistant/config:/config
+    deploy:
+      resources:
+        limits:
+          pids: 5000
+          cpus: "10"
+          memory: 4G
+    security_opt:
+      - no-new-privileges=true
+    image: nodered/node-red:latest

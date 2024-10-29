@@ -1,0 +1,27 @@
+volumes:
+  config:
+  data:
+
+services:
+  idrive:
+    container_name: idrive
+    hostname: server
+    image: glandix/idrive
+    env_file:
+      - ../.env
+    restart: always
+    volumes:
+      - config:/opt/IDriveForLinux/idriveIt
+      - data:/mnt/files
+      - /home/storage:/home/storage
+      - /home/containers:/home/containers
+      # Prevents iDrive from simplifying sources to /home
+      - /home/empty:/home/empty:ro
+      - /tmp/idrive:/tmp
+    deploy:
+      resources:
+        limits:
+          pids: 600
+          cpus: "10"
+          memory: 10G
+    privileged: true

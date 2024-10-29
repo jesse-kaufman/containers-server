@@ -1,0 +1,81 @@
+services:
+  ha:
+    image: lscr.io/linuxserver/homeassistant:latest
+    container_name: ha
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    env_file:
+      - ../.env
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.ha.entrypoints=https
+      - traefik.http.routers.ha.tls=true
+      - traefik.http.routers.ha.middlewares=default@file
+      - traefik.http.routers.ha.service=ha@file
+      - traefik.http.services.ha.loadbalancer.server.port=8123
+    environment:
+      - WHEELS_LINK=https://wheels.home-assistant.io/musllinux/
+    restart: always
+    healthcheck:
+      test: curl -f http://localhost:8123 --insecure -s
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    volumes:
+      - ./config:/config
+      - /home/storage/homeassistant/media:/media
+      - /home/storage/certs:/certs
+      - /home/storage/homeassistant/backups:/config/backups
+    deploy:
+      resources:
+        limits:
+          pids: 600
+          cpus: "10"
+          memory: 8G
+    security_opt:
+      - no-new-privileges:true
+
+  piper:
+    image: lscr.io/linuxserver/piper:latest
+    container_name: piper
+    env_file:
+      - ../.env
+    environment:
+      - PIPER_VOICE=en_US-libritts_r-medium
+    volumes:
+      - ./piper:/config
+    ports:
+      - 127.0.0.1:10200:10200
+    restart: always
+    deploy:
+      resources:
+        limits:
+          pids: 600
+          cpus: "6"
+          memory: 2G
+
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   container_name: ollama
+  #   environment:
+  #     - OLLAMA_LANGUAGE=en
+  #     - OLLAMA_VOICE=en_US_FEMALE_NICOLE
+  #   ports:
+  #     - 127.0.0.1:11434:11434
+  #   group_add:
+  #     - "110"
+  #     - "44"
+  #   devices:
+  #     - /dev/dri/renderD128:/dev/dri/renderD128
+  #     - /dev/kfd:/dev/kfd
+  #   volumes:
+  #     - ./ollama:/root/.ollama
+  #   restart: always
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         pids: 600
+  #         cpus: "6"
+  #         memory: 16G

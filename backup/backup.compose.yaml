@@ -1,0 +1,56 @@
+services:
+  backup:
+    image: kopia/kopia:latest
+    container_name: backup
+    restart: always
+    hostname: backup-utils
+    env_file:
+      - .env
+      - ../.env
+    networks:
+      - proxy
+    ports:
+      - 192.168.22.11:51515:51515
+    command:
+      - server
+      - start
+      # - --insecure
+      - --disable-csrf-token-checks
+      - --tls-cert-file=/certs/lloydnet.org/fullchain.pem
+      - --tls-key-file=/certs/lloydnet.org/privkey.pem
+      - --address=0.0.0.0:51515
+      - --persist-credentials
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.backup.entryPoints=https
+      - traefik.http.routers.backup.tls=true
+      - traefik.http.routers.backup.middlewares=default@file
+      - traefik.http.services.backup.loadbalancer.server.scheme=https
+    volumes:
+      # Mount local folders needed by kopia
+      - ./kopia/config:/app/config
+      - ./kopia/cache:/app/cache
+      - ./kopia/logs:/app/logs
+      - /home/storage/certs:/certs
+      # Mount local folders to snapshot
+      - /home/storage:/src/storage:ro
+      - /home/containers:/src/containers:ro
+      - /home/glandix/samba:/src/samba:ro
+      - /etc:/src/etc:ro
+      # Mount repository location
+      - /home/storage/backups:/backups
+      # Mount path for browsing mounted snaphots
+      - ./kopia/tmp:/tmp:shared
+    healthcheck:
+      test: ps | grep kopia
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "3"
+          pids: 500
+          memory: 6G
+    security_opt:
+      - no-new-privileges=true

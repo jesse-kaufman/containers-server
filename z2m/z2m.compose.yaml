@@ -1,0 +1,83 @@
+services:
+  z2m:
+    container_name: z2m
+    image: glandix/zigbee2mqtt
+    env_file:
+      - ../.env
+    build:
+      context: .
+      dockerfile: build/Dockerfile
+      pull: true
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=zigbee
+      - traefik.http.routers.z2m.entrypoints=https
+      - traefik.http.routers.z2m.tls=true
+      - traefik.http.routers.z2m.middlewares=default@file
+    restart: always
+    read_only: true
+    entrypoint: /sbin/tini -- node index.js
+    networks:
+      - zigbee
+      - zigbee-internal
+    extra_hosts:
+      - host:host-gateway
+    deploy:
+      resources:
+        limits:
+          cpus: "10"
+          pids: 50
+          memory: 500M
+    expose:
+      - 80/tcp
+    volumes:
+      - ./dining/data:/app/data
+    user: ${PUID}:${PGID}
+    environment:
+      Z2M_WATCHDOG: default
+    healthcheck:
+      test: curl -f http://localhost:80 --insecure -s -s
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    security_opt:
+      - no-new-privileges=true
+
+  z2m-basement:
+    container_name: z2m-basement
+    image: glandix/zigbee2mqtt
+    env_file:
+      - ../.env
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=zigbee
+      - traefik.http.routers.z2m-basement.entrypoints=https
+      - traefik.http.routers.z2m-basement.tls=true
+      - traefik.http.routers.z2m-basement.middlewares=default@file
+    restart: always
+    read_only: true
+    networks:
+      - zigbee
+      - zigbee-internal
+    extra_hosts:
+      - host:host-gateway
+    deploy:
+      resources:
+        limits:
+          cpus: "10"
+          pids: 50
+          memory: 500M
+    expose:
+      - 80/tcp
+    volumes:
+      - ./basement:/app/data
+    user: ${PUID}:${PGID}
+    environment:
+      Z2M_WATCHDOG: default
+    healthcheck:
+      test: curl -f http://localhost:80 --insecure -s -s
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    security_opt:
+      - no-new-privileges=true

@@ -1,0 +1,72 @@
+services:
+  cloud:
+    container_name: cloud
+    env_file:
+      - ../.env
+    networks:
+      - cloud
+      - mariadb-internal
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=cloud
+      - traefik.http.routers.cloud.entryPoints=https
+      - traefik.http.routers.cloud.tls=true
+      - traefik.http.routers.cloud.middlewares=default@file
+      - traefik.http.services.cloud.loadbalancer.server.scheme=https
+      - traefik.http.services.cloud.loadbalancer.server.port=443
+    volumes:
+      - ./config:/config/
+      - /home/storage/nextcloud:/data
+      - /home/storage/photos:/data/glandix/files/Porn
+    healthcheck:
+      test: curl -f https://localhost:443 --insecure -s
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          pids: 400
+          cpus: "6"
+          memory: 1G
+    restart: always
+    image: lscr.io/linuxserver/nextcloud:latest
+    security_opt:
+      - no-new-privileges=true
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+  office:
+    container_name: office
+    env_file:
+      - ../.env
+    networks:
+      - cloud
+    image: collabora/code
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,uid=${PUID},gid=${PGID}
+    volumes:
+      - ./office/config/coolwsd.xml:/etc/coolwsd/coolwsd.xml
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.office.entryPoints=https
+      - traefik.http.routers.office.tls=true
+      - traefik.http.routers.office.middlewares=default@file
+    environment:
+      - server_name=office.lloydnet.org
+      - "extra_params=--o:security.capabilities=false "
+    healthcheck:
+      test: curl -f https://localhost:9980 --insecure -s
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          pids: 400
+          cpus: "2"
+          memory: 1G
+    restart: always
+    security_opt:
+      - no-new-privileges:true

@@ -1,0 +1,85 @@
+secrets:
+  jwt_secret:
+    file: ./secrets/jwt_secret
+  session_secret:
+    file: ./secrets/session_secret
+  storage_password:
+    file: ./secrets/storage_password
+  storage_encryption_key:
+    file: ./secrets/storage_encryption_key
+
+services:
+  #
+  # AUTHELIA - Adds authentication to websites
+  #
+  auth:
+    container_name: auth
+    image: authelia/authelia
+    env_file:
+      - ../.env
+    networks:
+      - proxy
+      - auth-internal
+    expose:
+      - 9091
+    volumes:
+      - ./config:/config
+      - ./log:/var/log
+      - /home/storage/certs:/certs:ro
+    user: ${PUID}:${PGID}
+    secrets:
+      - jwt_secret
+      - session_secret
+      - storage_encryption_key
+    environment:
+      - AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE=/run/secrets/jwt_secret
+      - AUTHELIA_SESSION_SECRET_FILE=/run/secrets/session_secret
+      - AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE=/run/secrets/storage_encryption_key
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.authelia.entryPoints=https
+      - traefik.http.routers.authelia.tls=true
+      - traefik.http.routers.authelia.middlewares=default@file
+      - traefik.http.services.authelia.loadbalancer.server.scheme=https
+    deploy:
+      resources:
+        limits:
+          cpus: "6"
+          pids: 50
+          memory: 200M
+    restart: always
+    security_opt:
+      - no-new-privileges=true
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  #
+  # REDIS - Stores session data
+  #
+  redis:
+    container_name: redis
+    networks:
+      - auth-internal
+    user: ${PUID}:${PGID}
+    read_only: true
+    volumes:
+      - ./redis/data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    healthcheck:
+      test: ps | grep redis-server
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "6"
+          pids: 50
+          memory: 50M
+    restart: always
+    image: redis:alpine
+    command: redis-server /usr/local/etc/redis/redis.conf
+    security_opt:
+      - no-new-privileges=true

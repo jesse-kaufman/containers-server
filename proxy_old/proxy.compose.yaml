@@ -1,0 +1,39 @@
+services:
+  proxy:
+    container_name: proxy
+    image: jc21/nginx-proxy-manager:latest
+    restart: always
+    env_file:
+      - ../.env
+    extra_hosts:
+      - ha:host-gateway
+    networks:
+      - proxy
+      - cloud
+      - influxdb
+      - zigbee
+    volumes:
+      - ./data:/data:rw
+      - ./config/snippets:/snippets:ro
+      - ./config/custom:/data/nginx/custom:rw
+      - ./config/letsencrypt:/etc/letsencrypt:rw
+      - /home/storage/certs/lloydnet.org_ecc:/data/custom_ssl/npm-19
+    expose:
+      - 81
+    ports:
+      - 192.168.22.11:81:81
+      - 192.168.22.11:443:443
+      - 192.168.22.11:443:443/udp
+    healthcheck:
+      test: curl -f http://localhost:81 -s
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "10"
+          pids: 500
+          memory: 2G
+    security_opt:
+      - no-new-privileges=true

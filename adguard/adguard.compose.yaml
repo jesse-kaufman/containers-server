@@ -1,0 +1,48 @@
+services:
+  adguard:
+    container_name: adguard
+    network_mode: host
+    env_file:
+      - ../.env
+    read_only: true
+    volumes:
+      - ./data:/opt/adguardhome/work
+      - ./config:/opt/adguardhome/conf
+      - /home/storage/certs:/certs:ro
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.adguard.entryPoints=https
+      - traefik.http.routers.adguard.tls=true
+      - traefik.http.routers.adguard.middlewares=default@file
+    healthcheck:
+      test: nslookup adguard.lloydnet.org 127.0.0.1 || exit 1
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          pids: 100
+          memory: 1.5G
+          cpus: "4"
+    restart: always
+    image: adguard/adguardhome
+    security_opt:
+      - no-new-privileges=true
+
+  adguard-sync:
+    container_name: adguard-sync
+    env_file:
+      - ../.env
+    volumes:
+      - ./config:/config
+    deploy:
+      resources:
+        limits:
+          pids: 100
+          memory: 75M
+          cpus: "1"
+    restart: always
+    image: linuxserver/adguardhome-sync
+    security_opt:
+      - no-new-privileges:true

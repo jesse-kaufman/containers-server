@@ -1,0 +1,20 @@
+services:
+  certs:
+    container_name: certs
+    image: neilpang/acme.sh
+    env_file:
+      - ../.env
+      - .env
+    restart: always
+    command: daemon
+    volumes:
+      - ./config:/acme.sh
+      - /home/storage/certs:/certs
+    deploy:
+      resources:
+        limits:
+          pids: 100
+          cpus: "0.5"
+          memory: 150M
+    security_opt:
+      - no-new-privileges=true

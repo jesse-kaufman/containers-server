@@ -1,0 +1,40 @@
+secrets:
+  mail:
+    file: ./secret
+
+services:
+  diun:
+    container_name: diun
+    env_file:
+      - ../.env
+      - .env
+    read_only: true
+    secrets:
+      - mail
+    restart: always
+    volumes:
+      - ./data:/data:rw
+      - ./diun.yml:/diun.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro,rshared
+      - /home/glandix/.docker:/root/.docker:ro
+    tmpfs: /tmp:rw,noexec,nosuid
+    cap_drop:
+      - ALL
+    cap_add:
+      - DAC_OVERRIDE
+      - SETUID
+      - SETGID
+    healthcheck:
+      test: ps | grep "diun serve" | grep -v grep
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          pids: 100
+          cpus: "0.5"
+          memory: 150M
+    image: crazymax/diun:latest
+    security_opt:
+      - no-new-privileges=true

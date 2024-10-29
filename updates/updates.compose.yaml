@@ -1,0 +1,31 @@
+services:
+  updates:
+    container_name: updates
+    env_file:
+      - ../.env
+    networks:
+      - proxy
+    restart: always
+    expose:
+      - 80
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.updates.entrypoints=https
+      - traefik.http.routers.updates.tls=true
+      - traefik.http.routers.updates.middlewares=default@file
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro,rshared
+    healthcheck:
+      test: curl -f http://localhost:80 --insecure -s
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          pids: 100
+          memory: 250M
+    security_opt:
+      - no-new-privileges=true
+    image: palleri/dcw:latest

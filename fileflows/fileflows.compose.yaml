@@ -1,0 +1,31 @@
+services:
+  fileflows:
+    image: revenz/fileflows
+    container_name: fileflows
+    env_file:
+      - ../.env
+    networks:
+      - proxy
+    environment:
+      - ServerUrl=https://fileflows.lloydnet.org
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.fileflows.entrypoints=https
+      - traefik.http.routers.fileflows.tls=true
+      - traefik.http.routers.fileflows.middlewares=default@file
+    devices:
+      - /dev/dri:/dev/dri
+    volumes:
+      - /tmp:/temp
+      - ./data:/app/Data
+      - /home/storage/media:/data
+      - /home/storage/photos:/photos
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          pids: 500
+          cpus: "2"
+    security_opt:
+      - no-new-privileges:true

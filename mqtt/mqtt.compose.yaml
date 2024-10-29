@@ -1,0 +1,49 @@
+services:
+  mqtt:
+    container_name: mqtt
+    image: emqx/emqx:latest
+    env_file:
+      - ../.env
+      - .env
+    networks:
+      - zigbee
+      - zigbee-internal
+    hostname: mqtt.lloydnet.org
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=zigbee
+      - traefik.http.routers.mqtt.entryPoints=https
+      - traefik.http.routers.mqtt.tls=true
+      - traefik.http.routers.mqtt.middlewares=default@file
+      - traefik.http.services.mqtt.loadbalancer.server.port=18083
+    ports:
+      - 8883:8883
+      - 127.0.0.1:1883:1883
+    user: ${PUID}:${PGID}
+    restart: always
+    healthcheck:
+      test: [CMD, /opt/emqx/bin/emqx, ctl, status]
+      interval: 5s
+      timeout: 25s
+      retries: 5
+    volumes:
+      - ./data:/opt/emqx/data
+      - ./config:/opt/emqx/etc
+      - ./log:/opt/emqx/log
+      - /home/storage/certs:/certs:ro
+    # sysctls:
+    #   net.core.somaxconn: 32768
+    #   net.ipv4.tcp_max_syn_backlog: 16384
+    #   net.ipv4.tcp_rmem: 1024 4096 16777216
+    #   net.ipv4.tcp_wmem: 1024 4096 16777216
+    #   net.ipv4.tcp_max_tw_buckets: 1048576
+    deploy:
+      resources:
+        limits:
+          cpus: "10"
+          pids: 500
+          memory: 1G
+    security_opt:
+      - no-new-privileges=true
+    depends_on:
+      - ha

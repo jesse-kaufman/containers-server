@@ -1,0 +1,73 @@
+services:
+  # EUFY SECURITY CONTAINER
+  eufy:
+    container_name: eufy
+    env_file:
+      - ../.env
+    network_mode: host
+    restart: always
+    build:
+      context: .
+      dockerfile: build/Dockerfile
+      pull: true
+    image: glandix/eufy-security-ws
+    read_only: true
+    init: true
+    volumes:
+      - ./data:/data
+    user: ${PUID}:${PGID}
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - USERNAME=jesse@jessekaufman.com
+      - PASSWORD=Q9]8AgM<Hv[.!-Ld
+      - COUNTRY=US
+      - TRUSTED_DEVICE_NAME=HOMEASSISTANT
+      - EVENT_DURATION_SECONDS=25
+      - STATION_IP_ADDRESSES=T8030P1323022AA6:192.168.22.197;T8600P1023351EA5:192.168.22.195;T8422N1022470D9C:192.168.22.199;T8131N632138440F:192.168.22.255;T8131N63213846D6:192.168.22.255;T8200N00212810D3:192.168.22.196;T8400P3223211BDC:192.168.22.194
+    healthcheck:
+      test: ps ax | grep server.js
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "8"
+          pids: 500
+          memory: 250M
+    security_opt:
+      - no-new-privileges=true
+
+  # MEDIAMTX CONTAINER
+  mediamtx:
+    container_name: mediamtx
+    restart: always
+    env_file:
+      - ../.env
+    ports:
+      - 127.0.0.1:8556:8554
+    read_only: true
+    volumes:
+      - ./mediamtx.yml:/mediamtx.yml
+      - /home/storage/certs:/certs:ro
+    user: ${PUID}:${PGID}
+    environment:
+      - MTX_PROTOCOLS=tcp
+      - MTX_WEBRTCADDITIONALHOSTS=192.168.x.x
+      - RTSP_PROTOCOLS=tcp
+    healthcheck:
+      test: ps | grep mediamtx
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "8"
+          pids: 50
+          memory: 250M
+    image: bluenviron/mediamtx:latest-ffmpeg
+    security_opt:
+      - no-new-privileges=true

@@ -1,0 +1,36 @@
+services:
+  fail2ban:
+    image: lscr.io/linuxserver/fail2ban:latest
+    container_name: fail2ban
+    env_file:
+      - ../.env
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    network_mode: host
+    volumes:
+      - ./config:/config
+      - ./log:/config/log/fail2ban
+      - ./run:/var/run/fail2ban
+      - /var/log:/var/log:ro
+      - /run/systemd/journal/dev-log:/dev/log:ro
+      - ../auth/log:/remotelogs/authelia:ro
+      - ../homeassistant/config/home-assistant.log:/remotelogs/homeassistant/home-assistant.log:ro
+      - ../grafana/log:/remotelogs/grafana:ro
+      - ../cloud/data:/remotelogs/nextcloud:ro
+      - ../proxy/data/logs:/remotelogs/nginx:ro
+    healthcheck:
+      test: ps | grep fail2ban-client
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          pids: 100
+          memory: 50M
+    restart: always
+    security_opt:
+      - no-new-privileges=true

@@ -1,0 +1,135 @@
+networks:
+  # Default network (no cross-container communication)
+  default:
+    driver_opts:
+      com.docker.network.bridge.enable_icc: "false"
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.0.255.0/24
+
+  # Proxy network
+  proxy:
+    name: proxy
+    driver_opts:
+      com.docker.network.bridge.enable_icc: "true"
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.0.0.0/24
+
+  # Zigbee2MQTT + MQTT internal network
+  zigbee-internal:
+    name: zigbee-internal
+    driver_opts:
+      com.docker.network.bridge.enable_icc: "true"
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.1.2.0/24
+
+  #
+  # Zigbee2MQTT + MQTT frontend network
+  #
+  # - MQTT acts as go-between with mqtt-internal network)
+  #
+  zigbee:
+    name: zigbee
+    driver_opts:
+      com.docker.network.bridge.enable_icc: "true"
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.0.2.0/24
+
+  # NextCloud frontend network
+  cloud:
+    name: cloud
+    driver_opts:
+      com.docker.network.bridge.enable_icc: "true"
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.0.4.0/24
+
+  # MariaDB internal network
+  mariadb-internal:
+    name: mariadb-internal
+    driver_opts:
+      com.docker.network.bridge.enable_icc: "true"
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.1.16.0/24
+
+  # Auth internal network
+  auth-internal:
+    name: auth-internal
+    driver_opts:
+      com.docker.network.bridge.enable_icc: "true"
+    ipam:
+      config:
+        - subnet: 10.1.17.0/24
+
+  # Jellyfin frontend network
+  jellyfin:
+    name: jellyfin
+    driver_opts:
+      com.docker.network.bridge.enable_icc: "true"
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.0.19.0/24
+
+  # ZWave internal network
+  zwave-internal:
+    name: zwave-internal
+    driver_opts:
+      com.docker.network.bridge.enable_icc: "true"
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.1.23.0/24
+
+  # InfluxDB internal network
+  influxdb-internal:
+    name: influxdb-internal
+    driver_opts:
+      com.docker.network.bridge.enable_icc: "true"
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.1.24.0/24
+
+  # InfluxDB frontend network
+  influxdb:
+    name: influxdb
+    driver_opts:
+      com.docker.network.bridge.enable_icc: "true"
+    ipam:
+      config:
+        - subnet: 10.0.24.0/24
+
+  mongodb:
+    name: mongodb
+    driver_opts:
+      com.docker.network.bridge.enable_icc: "true"
+    ipam:
+      config:
+        - subnet: 10.0.31.0/24
+
+  tunnel:
+    name: tunnel
+    driver_opts:
+      com.docker.network.bridge.enable_icc: "true"
+    ipam:
+      config:
+        - subnet: 10.0.34.0/24
+
+  evidencedb:
+    name: evidencedb
+    driver_opts:
+      com.docker.network.bridge.enable_icc: "true"
+    ipam:
+      config:
+        - subnet: 10.0.35.0/24

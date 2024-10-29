@@ -1,0 +1,125 @@
+services:
+  #
+  # Grafana
+  #
+  grafana:
+    container_name: grafana
+    env_file:
+      - ../.env
+      - .env
+    networks:
+      - influxdb
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=influxdb
+      - traefik.http.routers.grafana.entrypoints=https
+      - traefik.http.routers.grafana.tls=true
+      - traefik.http.routers.grafana.middlewares=default@file
+      - traefik.http.services.grafana.loadbalancer.server.scheme=https
+    volumes:
+      - ./data:/var/lib/grafana:rw
+      - ./config:/etc/grafana:rw
+      - ./log:/var/log/grafana:rw
+      - /home/containers/mariadb/mysqld:/tmp/mysqld
+      - /home/storage/certs:/certs:ro
+    healthcheck:
+      test: curl -f https://localhost:3000/api/health --insecure -s
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "8"
+          pids: 500
+          memory: 1G
+    user: ${PUID}:${PGID}
+    restart: always
+    security_opt:
+      - no-new-privileges=true
+    image: grafana/grafana-enterprise:11.2.2
+    depends_on:
+      - influxdb
+
+  #
+  # INFLUXDB
+  #
+  influxdb:
+    container_name: influxdb
+    hostname: influxdb.lloydnet.org
+    image: influxdb:latest
+    env_file:
+      - ../.env
+      - .env
+    networks:
+      - influxdb
+      - influxdb-internal
+    ports:
+      - 192.168.22.11:8086:8086
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=influxdb
+      - traefik.http.routers.influxdb.entrypoints=https
+      - traefik.http.routers.influxdb.tls=true
+      - traefik.http.routers.influxdb.middlewares=default@file
+      - traefik.http.services.influxdb.loadbalancer.server.scheme=https
+    stdin_open: true
+    tty: true
+    restart: always
+    volumes:
+      - ./influxdb/data:/var/lib/influxdb2
+      - ./influxdb/config:/etc/influxdb2
+      - /home/storage/certs:/certs
+    healthcheck:
+      test: curl -f https://influxdb:8086/ping --insecure -s
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          pids: 500
+          memory: 10G
+    security_opt:
+      - no-new-privileges=true
+
+  #
+  # Telegraf
+  #
+  telegraf:
+    container_name: telegraf
+    env_file:
+      - ../.env
+      - .env
+    privileged: true
+    restart: always
+    volumes:
+      - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
+      - /:/hostfs:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro,rshared
+      - ../fail2ban/run:/var/run/fail2ban:ro
+    user: ${PUID}:138
+    environment:
+      - HOST_ETC=/hostfs/etc
+      - HOST_PROC=/hostfs/proc
+      - HOST_SYS=/hostfs/sys
+      - HOST_VAR=/hostfs/var
+      - HOST_RUN=/hostfs/run
+      - HOST_MOUNT_PREFIX=/hostfs
+    healthcheck:
+      test: ps | grep telegraf | grep -v grep
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          pids: 500
+          memory: 500M
+    security_opt:
+      - no-new-privileges=true
+    image: telegraf
+    depends_on:
+      - influxdb

@@ -1,0 +1,58 @@
+secrets:
+  pass:
+    file: ./secret
+
+services:
+  #
+  # SAMBA - File sharing
+  #
+  samba:
+    image: crazymax/samba:latest
+    container_name: samba
+    env_file:
+      - path: ../.env
+    secrets:
+      - pass
+    ports:
+      - 192.168.22.11:445:445
+    environment:
+      - SAMBA_WORKGROUP=Slacknet
+    volumes:
+      - ./data:/data
+      - /home/containers:/samba/containers
+      - /home/storage/photos:/samba/photos
+      - /home/storage/nextcloud/glandix/files:/samba/cloudfiles
+      - /home/storage/backups:/samba/backups
+      - /home/storage/software:/samba/software
+      - /home/storage/media:/samba/media
+      - /home/storage:/samba/storage
+      - /home/storage/homeassistant/media/cameras:/samba/cameras
+      - /home/containers/homeassistant:/samba/homeassistant
+    security_opt:
+      - no-new-privileges=true
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          pids: 500
+          memory: 6G
+
+  #
+  # AVAHI - Advertises Samba services
+  #
+  avahi:
+    image: ydkn/avahi:latest
+    container_name: avahi
+    env_file:
+      - path: ../.env
+    network_mode: host
+    volumes:
+      - ./avahi-services:/etc/avahi/services
+    security_opt:
+      - no-new-privileges=true
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          pids: 500
+          memory: 25M

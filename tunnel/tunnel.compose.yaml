@@ -1,0 +1,22 @@
+services:
+  tunnel:
+    container_name: tunnel
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${TOKEN}
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - tunnel
+    user: ${PUID}:${PGID}
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    deploy:
+      resources:
+        limits:
+          cpus: "10"
+          pids: 500
+          memory: 200M
+    security_opt:
+      - no-new-privileges=true

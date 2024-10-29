@@ -1,0 +1,30 @@
+services:
+  esphome:
+    container_name: esphome
+    image: ghcr.io/esphome/esphome
+    env_file:
+      - ../.env
+      - .env
+    volumes:
+      - ./config:/config
+      - /etc/localtime:/etc/localtime:ro
+    restart: always
+    privileged: true
+    network_mode: host
+    expose:
+      - 6052
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.esphome.entrypoints=https
+      - traefik.http.routers.esphome.tls=true
+      - traefik.http.routers.esphome.middlewares=default@file
+      - traefik.http.routers.esphome.service=esphome@file
+      - traefik.http.services.esphome.loadbalancer.server.port=6052
+    deploy:
+      resources:
+        limits:
+          cpus: "8"
+          pids: 500
+          memory: 1G
+    security_opt:
+      - no-new-privileges=true

@@ -1,0 +1,37 @@
+services:
+  cdn:
+    container_name: cdn
+    image: patrikjuvonen/docker-nginx-http3
+    env_file:
+      - ../.env
+    read_only: true
+    expose:
+      - 80
+    networks:
+      - proxy
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.cdn.entryPoints=https
+      - traefik.http.routers.cdn.tls=true
+      - traefik.http.routers.cdn.middlewares=public@file
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,uid=${PUID},gid=${PGID}
+      - /run:rw,noexec,nosuid,uid=${PUID},gid=${PGID}
+      - /var/cache/nginx:rw,noexec,nosuid,uid=${PUID},gid=${PGID}
+    volumes:
+      - ./data:/var/www/html:ro
+      - ./config:/etc/nginx:ro
+      - ./logs/nginx:/var/log/nginx:rw,uid=${PUID},gid=${PGID}
+      - ../../storage/nextcloud/glandix/files/Documents/Brian Tiemeyer Evidence:/var/www/html/texts/attachments/videos:ro
+      - ../../storage/nextcloud/glandix/files/Documents/Brian Tiemeyer Evidence:/var/www/html/texts/videos:ro
+    user: ${PUID}:${PGID}
+    deploy:
+      resources:
+        limits:
+          cpus: "6"
+          pids: 300
+          memory: 250M
+    restart: always
+    security_opt:
+      - no-new-privileges=true

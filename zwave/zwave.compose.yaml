@@ -1,0 +1,37 @@
+services:
+  zwave:
+    container_name: zwave
+    image: zwavejs/zwave-js-ui
+    read_only: true
+    env_file:
+      - ../.env
+    networks:
+      - proxy
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.zwave.entrypoints=https
+      - traefik.http.routers.zwave.tls=true
+      - traefik.http.routers.zwave.middlewares=default@file
+      - traefik.http.services.zwave.loadbalancer.server.port=8091
+      - traefik.http.services.zwave.loadbalancer.server.scheme=https
+    restart: unless-stopped
+    user: ${PUID}:20
+    ports:
+      - 127.0.0.1:3003:3000
+    deploy:
+      resources:
+        limits:
+          cpus: "8"
+          pids: 50
+          memory: 500M
+    devices:
+      - /dev/serial/by-id/usb-Silicon_Labs_Zooz_ZST10_700_Z-Wave_Stick_0001-if00-port0:/dev/zwave
+    volumes:
+      - ./data:/usr/src/app/store
+    healthcheck:
+      test: ps ax | grep server
+      interval: 5s
+      timeout: 10s
+      retries: 5
+    security_opt:
+      - no-new-privileges=true
