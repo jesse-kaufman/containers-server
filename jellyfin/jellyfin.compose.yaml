@@ -37,7 +37,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "8"
+          cpus: "4"
           pids: 999
           memory: 8G
     security_opt:
