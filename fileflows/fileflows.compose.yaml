@@ -4,6 +4,7 @@ services:
     container_name: fileflows
     env_file:
       - ../.env
+      - .env
     networks:
       - proxy
     environment:
@@ -19,7 +20,7 @@ services:
       - /tmp:/temp
       - ./data:/app/Data
       - /home/storage/media:/data
-      - /home/storage/photos:/photos
+      - ${SECRET_PATH}:${CONTAINER_SECRET_PATH}
     restart: always
     deploy:
       resources:
