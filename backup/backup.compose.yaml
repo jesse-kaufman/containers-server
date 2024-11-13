@@ -50,6 +50,6 @@ services:
         limits:
           cpus: "3"
           pids: 500
-          memory: 6G
+          memory: 8G
     security_opt:
       - no-new-privileges=true
