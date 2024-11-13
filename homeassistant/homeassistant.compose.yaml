@@ -15,8 +15,6 @@ services:
       - traefik.http.routers.ha.middlewares=default@file
       - traefik.http.routers.ha.service=ha@file
       - traefik.http.services.ha.loadbalancer.server.port=8123
-    environment:
-      - WHEELS_LINK=https://wheels.home-assistant.io/musllinux/
     restart: always
     healthcheck:
       test: curl -f http://localhost:8123 --insecure -s
