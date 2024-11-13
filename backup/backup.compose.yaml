@@ -35,7 +35,6 @@ services:
       # Mount local folders to snapshot
       - /home/storage:/src/storage:ro
       - /home/containers:/src/containers:ro
-      - /home/glandix/samba:/src/samba:ro
       - /etc:/src/etc:ro
       # Mount repository location
       - /home/storage/backups:/backups
