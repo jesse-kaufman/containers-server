@@ -39,6 +39,6 @@ services:
         limits:
           cpus: "4"
           pids: 999
-          memory: 8G
+          memory: 10G
     security_opt:
       - no-new-privileges=true
