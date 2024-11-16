@@ -29,3 +29,4 @@ include:
   - path: updates/updates.compose.yaml
   - path: z2m/z2m.compose.yaml
   - path: zwave/zwave.compose.yaml
+  - path: files/files.compose.yaml

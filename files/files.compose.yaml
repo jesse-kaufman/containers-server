@@ -1,0 +1,34 @@
+services:
+  files:
+    container_name: files
+    env_file:
+      - ../.env
+      - .env
+    expose:
+      - 8080
+    networks:
+      - proxy
+      - mariadb-internal
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.files.entryPoints=https
+      - traefik.http.routers.files.tls=true
+      - traefik.http.routers.files.middlewares=default@file
+      - traefik.http.services.files.loadbalancer.server.scheme=https
+    volumes:
+      - ./data:/var/cells
+      - /home/storage/files:/data/files
+    deploy:
+      resources:
+        limits:
+          pids: 400
+          cpus: "6"
+          memory: 4G
+    restart: always
+    image: pydio/cells
+    security_opt:
+      - no-new-privileges=true
+    depends_on:
+      mariadb:
+        condition: service_healthy
