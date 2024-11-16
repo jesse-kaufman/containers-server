@@ -53,6 +53,7 @@ services:
       - traefik.http.routers.office.entryPoints=https
       - traefik.http.routers.office.tls=true
       - traefik.http.routers.office.middlewares=default@file
+      - traefik.http.services.office.loadbalancer.server.scheme=https
     environment:
       - server_name=office.lloydnet.org
       - "extra_params=--o:security.capabilities=false "
