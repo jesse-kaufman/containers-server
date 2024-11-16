@@ -8,6 +8,8 @@ services:
       - NET_RAW
     env_file:
       - ../.env
+    extra_hosts:
+      - mqtt:host-gateway
     labels:
       - traefik.enable=true
       - traefik.http.routers.ha.entrypoints=https
