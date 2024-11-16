@@ -45,5 +45,3 @@ services:
           memory: 1G
     security_opt:
       - no-new-privileges=true
-    depends_on:
-      - ha
