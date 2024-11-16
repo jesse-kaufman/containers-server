@@ -37,7 +37,7 @@ services:
     restart: always
     security_opt:
       - no-new-privileges=true
-    image: grafana/grafana-enterprise:11.2.2
+    image: grafana/grafana-enterprise
     depends_on:
       - influxdb
 
