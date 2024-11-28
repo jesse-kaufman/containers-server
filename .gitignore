@@ -23,3 +23,9 @@ mediamtx.yml
 wait-for-it.sh
 diun.yml
 .trunk
+*/eslint.config.js
+*/.prettierrc.yaml
+*/jsonconfig.json
+cdn/jsconfig.json
+*/.gitignore
+
