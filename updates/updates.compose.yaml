@@ -12,7 +12,7 @@ services:
       - traefik.enable=true
       - traefik.http.routers.updates.entrypoints=https
       - traefik.http.routers.updates.tls=true
-      - traefik.http.routers.updates.middlewares=default@file
+      - traefik.http.routers.updates.middlewares=auth-sniff@file
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro,rshared
     healthcheck:
