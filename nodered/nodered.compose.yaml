@@ -20,7 +20,7 @@ services:
       - 1880/tcp
     volumes:
       - ./data:/data
-      - /home/storage/homeassistant/media/cameras:/media/cameras
+      - /home/storage/internal/ha_media/cameras:/media/cameras
       - /home/containers/homeassistant/config:/config
     deploy:
       resources:
