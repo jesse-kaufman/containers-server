@@ -67,7 +67,7 @@ services:
     tty: true
     restart: always
     volumes:
-      - /home/storage/homeassistant/influxdb:/var/lib/influxdb2
+      - /home/storage/internal/influxdb:/var/lib/influxdb2
       - ./influxdb/config:/etc/influxdb2
       - /home/storage/certs:/certs
     healthcheck:
