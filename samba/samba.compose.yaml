@@ -56,3 +56,5 @@ services:
           cpus: "1"
           pids: 500
           memory: 25M
+    depends_on:
+      - samba
