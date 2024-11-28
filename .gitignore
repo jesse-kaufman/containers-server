@@ -25,7 +25,6 @@ diun.yml
 .trunk
 */eslint.config.js
 */.prettierrc.yaml
-*/jsonconfig.json
-cdn/jsconfig.json
-*/.gitignore
+*/jsconfig.json
+
 
