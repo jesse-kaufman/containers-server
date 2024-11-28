@@ -5,14 +5,14 @@ include:
   - path: auth/auth.compose.yaml
   - path: backup/backup.compose.yaml
   - path: cdn/cdn.compose.yaml
-  - path: cloud/cloud.compose.yaml
+  # - path: cloud/cloud.compose.yaml
   - path: diun/diun.compose.yaml
   - path: esphome/esphome.compose.yaml
   - path: eufy/eufy.compose.yaml
   - path: evidencedb/node-only/evidencedb.compose.yaml
   - path: fail2ban/fail2ban.compose.yaml
   - path: fileflows/fileflows.compose.yaml
-  #- path: games/games.compose.yaml
+  # - path: games/games.compose.yaml
   - path: grafana/grafana.compose.yaml
   - path: homeassistant/homeassistant.compose.yaml
   - path: jellyfin/jellyfin.compose.yaml
