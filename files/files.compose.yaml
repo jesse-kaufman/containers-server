@@ -18,7 +18,7 @@ services:
       - traefik.http.services.files.loadbalancer.server.scheme=https
     volumes:
       - ./data:/var/cells
-      - /home/storage/files:/data/files
+      - /home/storage/files:/var/cells/data
     deploy:
       resources:
         limits:
@@ -32,3 +32,38 @@ services:
     depends_on:
       mariadb:
         condition: service_healthy
+
+  office:
+    container_name: office
+    env_file:
+      - ../.env
+    networks:
+      - cloud
+    image: collabora/code
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,uid=${PUID},gid=${PGID}
+    volumes:
+      - ./office/config/coolwsd.xml:/etc/coolwsd/coolwsd.xml
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.office.entryPoints=https
+      - traefik.http.routers.office.tls=true
+      - traefik.http.routers.office.middlewares=default@file
+      - traefik.http.services.office.loadbalancer.server.scheme=https
+    environment:
+      - server_name=office.lloydnet.org
+      - "extra_params=--o:security.capabilities=false "
+    healthcheck:
+      test: curl -f https://localhost:9980 --insecure -s
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          pids: 400
+          cpus: "2"
+          memory: 1G
+    restart: always
+    security_opt:
+      - no-new-privileges:true
