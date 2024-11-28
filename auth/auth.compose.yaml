@@ -41,7 +41,6 @@ services:
       - traefik.http.routers.authelia.entryPoints=https
       - traefik.http.routers.authelia.tls=true
       - traefik.http.routers.authelia.middlewares=default@file
-      - traefik.http.services.authelia.loadbalancer.server.scheme=https
     deploy:
       resources:
         limits:
