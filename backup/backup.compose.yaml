@@ -3,7 +3,7 @@ services:
     image: kopia/kopia:latest
     container_name: backup
     restart: always
-    hostname: backup-utils
+    hostname: backup-server
     env_file:
       - .env
       - ../.env
@@ -28,9 +28,9 @@ services:
       - traefik.http.services.backup.loadbalancer.server.scheme=https
     volumes:
       # Mount local folders needed by kopia
-      - ./kopia/config:/app/config
-      - ./kopia/cache:/app/cache
-      - ./kopia/logs:/app/logs
+      - ./config:/app/config
+      - ./cache:/app/cache
+      - ./logs:/app/logs
       - /home/storage/certs:/certs
       # Mount local folders to snapshot
       - /home/storage:/src/storage:ro
@@ -39,7 +39,7 @@ services:
       # Mount repository location
       - /home/storage/backups:/backups
       # Mount path for browsing mounted snaphots
-      - ./kopia/tmp:/tmp:shared
+      - ./tmp:/tmp:shared
     healthcheck:
       test: ps | grep kopia
       interval: 30s
